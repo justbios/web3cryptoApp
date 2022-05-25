@@ -1,7 +1,7 @@
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import React, { memo } from 'react';
 //utils
-import { colors } from '../../utils/colors';
+import { Colors } from '../../utils/colors';
 
 interface ButtonProp {
   text: string;
@@ -11,7 +11,7 @@ interface ButtonProp {
 const Button = ({ text, onPress }: ButtonProp) => {
   return (
     <Pressable onPress={onPress} style={styles.container}>
-      <Text style={{ color: colors.white }}>{text}</Text>
+      <Text style={{ color: Colors.white }}>{text}</Text>
     </Pressable>
   );
 };
@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
     width: 230,
     borderRadius: 30,
     paddingVertical: 14,
-    backgroundColor: colors.blue,
+    backgroundColor: Colors.blue,
   },
 });
 

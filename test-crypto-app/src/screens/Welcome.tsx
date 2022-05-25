@@ -1,13 +1,14 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import React, { useState, useEffect } from 'react';
 //libs
 import { BarCodeScanner } from 'expo-barcode-scanner';
 // component
 import Button from '../components/Button';
+import { getAccount } from '../utils/web3Function';
 
 export default function Welcome() {
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [scanned, setScanned] = useState(false);
+  const [scanned, setScanned] = useState<boolean>(false);
 
   useEffect(() => {
     (async () => {
@@ -16,9 +17,11 @@ export default function Welcome() {
     })();
   }, []);
 
-  const handleBarCodeScanned = ({ data }: { data: string }) => {
+  const handleBarCodeScanned = async ({ data }: { data: string }) => {
     setScanned(true);
-    console.log(data);
+    getAccount(data)
+      .then((account) => console.log(account))
+      .catch((e) => alert('QR code is not valid'));
   };
 
   if (hasPermission === null) {
@@ -53,23 +56,5 @@ export default function Welcome() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  camera: {
-    flex: 1,
-  },
-  buttonContainer: {
-    flex: 1,
-    backgroundColor: 'transparent',
-    flexDirection: 'row',
-    margin: 20,
-  },
-  button: {
-    flex: 0.1,
-    alignSelf: 'flex-end',
-    alignItems: 'center',
-  },
-  text: {
-    fontSize: 18,
-    color: 'white',
   },
 });

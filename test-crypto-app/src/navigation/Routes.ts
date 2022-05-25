@@ -1,3 +1,3 @@
-export const Routes = {
-  Welcome: 'Welcome',
-};
+export enum Routes {
+  Welcome = 'Welcome',
+}
