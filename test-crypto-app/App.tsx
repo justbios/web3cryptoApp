@@ -4,13 +4,15 @@ import { StyleSheet, Text, View } from 'react-native';
 //libs
 import { NavigationContainer } from '@react-navigation/native';
 import AppNavigation from './src/navigation/AppNavigation';
-
+import { RecoilRoot } from 'recoil';
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <AppNavigation />
-    </NavigationContainer>
+    <RecoilRoot>
+      <NavigationContainer>
+        <AppNavigation />
+      </NavigationContainer>
+    </RecoilRoot>
   );
 }
 
