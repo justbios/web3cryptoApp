@@ -25,6 +25,7 @@ function Welcome({ navigation }: { navigation: any }) {
   const handleBarCodeScanned = async ({ data }: { data: string }) => {
     setScanned(true);
     try {
+      console.log(data);
       const res = getAccount(data);
       setAccount(res);
       return navigation.navigate(Routes.Profile);
