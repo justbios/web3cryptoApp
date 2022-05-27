@@ -1,12 +1,13 @@
-import { View, Text } from 'react-native';
-import React, { memo } from 'react';
+import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 // screen
 import Welcome from '../screens/Welcome';
+import Profile from '../screens/Profile';
 import { Routes } from './Routes';
 
 type RootStackParamList = {
-  Welcome: undefined;
+  [Routes.Welcome]: undefined;
+  [Routes.Profile]: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -17,10 +18,12 @@ const AppNavigation = () => {
       screenOptions={{
         headerShown: false,
       }}
+      // initialRouteName={Routes.Profile}
     >
       <Stack.Screen name={Routes.Welcome} component={Welcome} />
+      <Stack.Screen name={Routes.Profile} component={Profile} />
     </Stack.Navigator>
   );
 };
 
-export default memo(AppNavigation);
+export default AppNavigation;
