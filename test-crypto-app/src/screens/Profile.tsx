@@ -8,48 +8,42 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import React, { memo, useCallback, useEffect, useState } from 'react';
-//libs
-import Web3 from 'web3';
 //components
 import Form from '../components/Form';
 import Transaction from '../components/Transaction';
-import { TransactionModel } from '../components/Transaction/TransactionModel';
 //api
-import { getTransaction } from '../api/transaction';
+import {getTransaction, TransactionModel} from '../api/transaction';
 //utils
-import { getAccount, getBalance } from '../utils/web3Function';
+import { getBalance } from '../utils/web3Function';
 //recoil
 import { useRecoilValue } from 'recoil';
 import { account } from '../store/account/atom';
 import { Colors } from '../utils/colors';
+import web3Instance from "../api/web3Instance";
 
-function Profile() {
-  const web3 = new Web3(
-    new Web3.providers.HttpProvider('https://ropsten.infura.io/v3/372f31c1ef064786a4192d428733538c')
-  );
-  const _account = getAccount(account);
+const Profile:React.VFC = () => {
+  const _account = useRecoilValue(account);
 
   const [balance, setBalance] = useState<string>('');
-  const [transaction, setTransaction] = useState([]);
+  const [transaction, setTransaction] = useState<TransactionModel[]>([]);
 
   useEffect(() => {
-    getBalance(_account.address)
-      .then((balance) => setBalance(balance))
-      .catch((e) => console.log(e));
+    (async () => {
+      setBalance(await getBalance(_account.address));
+    })();
   }, [_account.address]);
 
   useEffect(() => {
-    getTransaction(_account.address).then((body) => {
-      const tenTransaction = body.result.slice(body.result.length - 10);
-      setTransaction(tenTransaction);
-    });
+    (async () => {
+      const transactions = await getTransaction(_account.address);
+      setTransaction(transactions);
+    })();
   }, []);
 
-  const onPress = useCallback(async (amount, address) => {
+  const onPress = useCallback(async (amount: string, address: string) => {
     try {
-      const value = web3.utils.toWei(amount, 'ether');
-      // const gasPrice = await web3.eth.getGasPrice();
-      const gas = await web3.eth.estimateGas({
+      const value = web3Instance.utils.toWei(amount, 'ether');
+      const gas = await web3Instance.eth.estimateGas({
         to: address,
         value,
         from: _account.address,
@@ -61,19 +55,24 @@ function Profile() {
         gas,
       };
       const signedTx = await _account.signTransaction(transaction);
-      const res = await web3.eth.sendSignedTransaction(signedTx.rawTransaction!);
+      const {status} = await web3Instance.eth.sendSignedTransaction(signedTx.rawTransaction!);
+
+      if (status) {
+        //TODO if the response is successful - refetch transactions
+      } else {
+        throw new Error('The problem was occurred')
+      }
     } catch (e) {
+      //TODO alert with an informative message
       console.log(e, 'ERROR');
     }
   }, []);
 
-  const renderItem = useCallback(({ item, index }) => {
-    return (
-      <View key={index + ' '}>
-        <Transaction transaction={{ ...item, value: web3.utils.fromWei(item.value, 'ether') }} />
-      </View>
-    );
-  }, []);
+  const renderItem = useCallback<ListRenderItem<TransactionModel>>(({ item }) => (
+      <Transaction transaction={{ ...item, value: web3Instance.utils.fromWei(item.value, 'ether') }} />
+  ), []);
+
+  const keyExtractor = useCallback((item: TransactionModel) => item.hash, [])
 
   const separator = () => <View style={styles.separator} />;
 
@@ -92,7 +91,8 @@ function Profile() {
         {transaction.length ? (
           <FlatList
             data={transaction}
-            renderItem={renderItem as ListRenderItem<TransactionModel>}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
             ItemSeparatorComponent={separator}
           />
         ) : (

@@ -1,4 +1,4 @@
-import { Text, Pressable, StyleSheet, TouchableOpacity } from 'react-native';
+import { Text, StyleSheet, TouchableOpacity } from 'react-native';
 import React, { memo } from 'react';
 //utils
 import { Colors } from '../../utils/colors';
@@ -8,13 +8,11 @@ interface ButtonProp {
   onPress: () => void;
 }
 
-const Button = ({ text, onPress }: ButtonProp) => {
-  return (
+const Button:React.VFC<ButtonProp> = ({ text, onPress }) => (
     <TouchableOpacity onPress={onPress} style={styles.container}>
       <Text style={{ color: Colors.white }}>{text}</Text>
     </TouchableOpacity>
-  );
-};
+)
 
 const styles = StyleSheet.create({
   container: {

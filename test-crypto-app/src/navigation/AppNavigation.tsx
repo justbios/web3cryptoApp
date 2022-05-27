@@ -12,13 +12,13 @@ type RootStackParamList = {
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-const AppNavigation = () => {
+const AppNavigation: React.VFC = () => {
   return (
     <Stack.Navigator
       screenOptions={{
         headerShown: false,
       }}
-      // initialRouteName={Routes.Profile}
+      initialRouteName={Routes.Welcome}
     >
       <Stack.Screen name={Routes.Welcome} component={Welcome} />
       <Stack.Screen name={Routes.Profile} component={Profile} />

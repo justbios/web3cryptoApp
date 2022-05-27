@@ -9,16 +9,17 @@ interface FormType {
 
 const Form: VFC<FormType> = ({ onSubmit }) => {
   const [address, setAddress] = useState('');
-  const [anmount, setAnmount] = useState('');
+  const [amount, setAmount] = useState('');
 
   const onPress = useCallback(() => {
-    onSubmit(anmount, address);
-  }, [anmount, address]);
+    //TODO ADD VALIDATION
+    onSubmit(amount, address);
+  }, [amount, address]);
 
   return (
     <View>
-      <Input title="adress" onChange={setAddress} />
-      <Input title="anmount" onChange={setAnmount} />
+      <Input title="address" onChange={setAddress} />
+      <Input title="amount" onChange={setAmount} />
       <View style={{ alignItems: 'center' }}>
         <Button text="submit" onPress={onPress} />
       </View>

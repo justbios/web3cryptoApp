@@ -9,13 +9,13 @@ import {
 import React, { memo } from 'react';
 import { Colors } from '../../utils/colors';
 
-interface InputType {
+interface IInputProps {
   title?: string;
   onChange: (value: string) => void;
-  error?: boolean;
+  error?: string;
 }
 
-function Input({ onChange, title, error }: InputType) {
+const Input:React.VFC<IInputProps> = ({ onChange, title, error }) => {
   const onChangeText = (text: NativeSyntheticEvent<TextInputChangeEventData>) => {
     if (!text.nativeEvent.text) {
       return;
@@ -29,7 +29,7 @@ function Input({ onChange, title, error }: InputType) {
       <View style={[styles.container, { borderColor: error ? Colors.red : Colors.black }]}>
         <TextInput style={styles.input} onChange={onChangeText} />
       </View>
-      {error && <Text style={styles.errorText}>data is`t valid</Text>}
+      {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
 }

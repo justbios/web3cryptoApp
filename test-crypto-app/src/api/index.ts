@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, {AxiosResponse} from 'axios';
 import { urlAPI as baseURL } from '../utils/Constants';
 
 const axiosClient = axios.create();
@@ -9,7 +9,7 @@ axiosClient.interceptors.request.use((request) => {
 });
 
 axiosClient.interceptors.response.use(
-  (response) => response?.data,
+  (response) => response,
   (err) => {
     const error = err?.response;
 
@@ -37,11 +37,11 @@ const options = (method = '', url = '', data = undefined, headers = {}) => {
   };
 };
 
-export const _axios = (method = '', url = '', data = undefined, headers = {}) => {
+export const _axios = <ResultType>(method = '', url = '', data = undefined, headers = {}): Promise<ResultType> => {
   return new Promise((resolve, reject) => {
     axiosClient(options(method, url, data, headers))
-      .then((response) => {
-        return resolve(response);
+      .then((response: AxiosResponse<ResultType>) => {
+        return resolve(response.data);
       })
       .catch((error) => {
         return reject(error);

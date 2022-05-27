@@ -1,26 +1,16 @@
 import './global';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React from "react";
 //libs
 import { NavigationContainer } from '@react-navigation/native';
 import AppNavigation from './src/navigation/AppNavigation';
 import { RecoilRoot } from 'recoil';
 
-export default function App() {
-  return (
+const App: React.VFC = () => (
     <RecoilRoot>
       <NavigationContainer>
         <AppNavigation />
       </NavigationContainer>
     </RecoilRoot>
   );
-}
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;
