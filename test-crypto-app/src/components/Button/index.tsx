@@ -1,4 +1,4 @@
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { Text, Pressable, StyleSheet, TouchableOpacity } from 'react-native';
 import React, { memo } from 'react';
 //utils
 import { Colors } from '../../utils/colors';
@@ -10,9 +10,9 @@ interface ButtonProp {
 
 const Button = ({ text, onPress }: ButtonProp) => {
   return (
-    <Pressable onPress={onPress} style={styles.container}>
+    <TouchableOpacity onPress={onPress} style={styles.container}>
       <Text style={{ color: Colors.white }}>{text}</Text>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 

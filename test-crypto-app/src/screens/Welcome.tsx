@@ -27,7 +27,7 @@ function Welcome({ navigation }: { navigation: any }) {
     try {
       console.log(data);
       const res = getAccount(data);
-      setAccount(res);
+      setAccount(res as any);
       return navigation.navigate(Routes.Profile);
     } catch (e) {
       alert('QR code is not valid');
