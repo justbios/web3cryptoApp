@@ -1,19 +1,19 @@
 import { View, Text, StyleSheet } from 'react-native';
-import React, {useState, useEffect, memo, useCallback} from 'react';
+import React, { useState, useEffect, memo, useCallback } from 'react';
 //libs
-import {BarCodeScannedCallback, BarCodeScanner} from 'expo-barcode-scanner';
+import { BarCodeScannedCallback, BarCodeScanner } from 'expo-barcode-scanner';
 // component
 import Button from '../components/Button';
 import { getAccount } from '../utils/web3Function';
 import { Routes } from '../navigation/Routes';
 //recoil
 import { useSetRecoilState } from 'recoil';
-import { account } from '../store/account/atom';
-import {NativeStackScreenProps} from "@react-navigation/native-stack";
-import {PermissionStatus} from "expo-modules-core/src/PermissionsInterface";
+import { accountAtom } from '../store/account/atom';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { PermissionStatus } from 'expo-modules-core/src/PermissionsInterface';
 
-const Welcome:React.VFC<NativeStackScreenProps<any>> = ({ navigation }) => {
-  const setAccount = useSetRecoilState(account);
+const Welcome: React.VFC<NativeStackScreenProps<any>> = ({ navigation }) => {
+  const setAccount = useSetRecoilState(accountAtom);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState<boolean>(false);
 
@@ -32,11 +32,11 @@ const Welcome:React.VFC<NativeStackScreenProps<any>> = ({ navigation }) => {
     } catch (e) {
       alert('QR code is not valid');
     }
-  }, [])
+  }, []);
 
   const handleScanAgainPress = useCallback(() => {
     setScanned(false);
-  }, [])
+  }, []);
 
   if (hasPermission === null) {
     return <Text>Requesting for camera permission</Text>;
@@ -51,9 +51,7 @@ const Welcome:React.VFC<NativeStackScreenProps<any>> = ({ navigation }) => {
         onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
         style={StyleSheet.absoluteFillObject}
       />
-      <View
-        style={styles.contentContainer}
-      />
+      <View style={styles.contentContainer} />
       {scanned && (
         <View style={styles.buttonView}>
           <Button text="Tap to Scan Again" onPress={handleScanAgainPress} />
@@ -61,7 +59,7 @@ const Welcome:React.VFC<NativeStackScreenProps<any>> = ({ navigation }) => {
       )}
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {

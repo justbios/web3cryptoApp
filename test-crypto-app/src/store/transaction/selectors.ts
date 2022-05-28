@@ -1,7 +1,7 @@
 import { selectorFamily, selector } from 'recoil';
 import { TransactionModel, getTransaction } from '../../api/transaction';
 import { getBalance } from '../../utils/web3Function';
-import { account } from '../account/atom';
+import { accountAtom } from '../account/atom';
 import { transactionAtom } from './atom';
 import web3Instance from '../../api/web3Instance';
 
@@ -18,7 +18,7 @@ export const sendTransactionSelector = selector({
   key: 'sendTransaction',
   get: async ({ get }) => {
     const { address, amount } = get(transactionAtom);
-    const _account = get(account);
+    const _account = get(accountAtom);
     try {
       const value = web3Instance.utils.toWei(amount, 'ether');
       const fixedTransaction = {

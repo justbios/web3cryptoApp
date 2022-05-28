@@ -17,14 +17,14 @@ import { getTransaction, TransactionModel } from '../api/transaction';
 import { getBalance } from '../utils/web3Function';
 //recoil
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { account } from '../store/account/atom';
+import { accountAtom } from '../store/account/atom';
 import { Colors } from '../utils/colors';
 import web3Instance from '../api/web3Instance';
 import { transactionSelector } from '../store/transaction/selectors';
 import { transactionAtom } from '../store/transaction/atom';
 
 const Profile: React.VFC = () => {
-  const _account = useRecoilValue(account);
+  const _account = useRecoilValue(accountAtom);
   const { transaction, balance } = useRecoilValue(transactionSelector(_account.address));
   const setForm = useSetRecoilState(transactionAtom);
 

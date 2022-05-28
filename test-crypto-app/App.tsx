@@ -18,7 +18,6 @@ const App: React.VFC = () => (
       <NavigationContainer>
         <AppNavigation />
       </NavigationContainer>
-      ›
     </RecoilRoot>
   </Suspense>
 );
