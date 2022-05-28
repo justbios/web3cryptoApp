@@ -27,7 +27,6 @@ const Welcome:React.VFC<NativeStackScreenProps<any>> = ({ navigation }) => {
   const handleBarCodeScanned = useCallback<BarCodeScannedCallback>(async ({ data }) => {
     setScanned(true);
     try {
-      // console.log(data);
       setAccount(getAccount(data));
       return navigation.navigate(Routes.Profile);
     } catch (e) {

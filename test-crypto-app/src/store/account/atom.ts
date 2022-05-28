@@ -6,4 +6,3 @@ export const account = atom({
   default: {} as Account,
 });
 
-//TODO MOVE TRANSACTIONS TO THE STORE
