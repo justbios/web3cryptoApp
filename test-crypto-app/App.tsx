@@ -1,24 +1,41 @@
 import './global';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, {Suspense, useEffect, useState} from 'react';
 //libs
 import { NavigationContainer } from '@react-navigation/native';
 import AppNavigation from './src/navigation/AppNavigation';
+import { RecoilRoot } from 'recoil';
+import { ActivityIndicator, View } from 'react-native';
+import {initDI} from "./src/di";
 
+const App: React.VFC = () => {
+    const [appSetUp, setAppSetUp] = useState<boolean>(false);
 
-export default function App() {
-  return (
-    <NavigationContainer>
-      <AppNavigation />
-    </NavigationContainer>
-  );
+    useEffect(() => {
+        (async () => {
+            await initDI();
+            setAppSetUp(true);
+        })();
+    }, [])
+
+    if (!appSetUp) {
+        return null;
+    }
+
+    return (
+        <Suspense
+            fallback={
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator />
+                </View>
+            }
+        >
+            <RecoilRoot>
+                <NavigationContainer>
+                    <AppNavigation />
+                </NavigationContainer>
+            </RecoilRoot>
+        </Suspense>
+    );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;
