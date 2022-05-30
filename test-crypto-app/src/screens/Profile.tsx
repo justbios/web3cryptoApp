@@ -2,30 +2,30 @@ import {
   View,
   Text,
   SafeAreaView,
-  StyleSheet,
   FlatList,
   ListRenderItem,
   ActivityIndicator,
 } from 'react-native';
-import React, { memo, useCallback, useEffect, useState } from 'react';
+import React, { memo, useCallback } from 'react';
+// libs
+import styled from 'styled-components/native';
 //components
 import Form from '../components/Form';
 import Transaction from '../components/Transaction';
+import { Box } from '../components/Box';
 //api
-import { getTransaction, TransactionModel } from '../api/transaction';
-//utils
-import { getBalance } from '../utils/web3Function';
+import { TransactionModel } from '../api/transaction';
+import web3Instance from '../api/web3Instance';
+// utils
+import { Colors } from '../utils/colors';
 //recoil
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { accountAtom } from '../store/account/atom';
-import { Colors } from '../utils/colors';
-import web3Instance from '../api/web3Instance';
 import { transactionSelector } from '../store/transaction/selectors';
 import { transactionAtom } from '../store/transaction/atom';
 
 const Profile: React.VFC = () => {
-  const _account = useRecoilValue(accountAtom);
-  const { transaction, balance } = useRecoilValue(transactionSelector(_account.address));
+  const { transaction, balance } = useRecoilValue(transactionSelector);
   const setForm = useSetRecoilState(transactionAtom);
 
   const onPress = useCallback(
@@ -34,6 +34,16 @@ const Profile: React.VFC = () => {
     },
     [setForm]
   );
+
+  // start  style
+
+  const Title = styled.Text({
+    fontSize: 18,
+    textAlign: 'center',
+    marginVertical: 20,
+  });
+
+  // end  style
 
   const renderItem = useCallback<ListRenderItem<TransactionModel>>(
     ({ item }) => (
@@ -46,20 +56,22 @@ const Profile: React.VFC = () => {
 
   const keyExtractor = useCallback((item: TransactionModel) => item.hash, []);
 
-  const separator = () => <View style={styles.separator} />;
+  const separator = () => <Box height={2} backgroundColor={Colors.white} />;
 
   return (
-    <View style={{ flex: 1 }}>
+    <Box flex={1}>
       <SafeAreaView />
-      <View style={{ marginHorizontal: '10%' }}>
-        <Text style={styles.title}>Баланс</Text>
+      <Box marginX={'10%'}>
+        <Title>Баланс</Title>
         <Text>{balance || 0} ETH</Text>
         <View>
           <Form onSubmit={onPress} />
         </View>
-      </View>
-      <View style={{ flex: 1 }}>
-        <Text style={{ textAlign: 'center', marginBottom: 20 }}>Transaction</Text>
+      </Box>
+      <Box flex={1}>
+        <Box alignItems={'center'} marginBottom={20}>
+          <Text>Transaction</Text>
+        </Box>
         {transaction.length ? (
           <FlatList
             data={transaction}
@@ -70,21 +82,9 @@ const Profile: React.VFC = () => {
         ) : (
           <ActivityIndicator />
         )}
-      </View>
-    </View>
+      </Box>
+    </Box>
   );
 };
-
-const styles = StyleSheet.create({
-  title: {
-    fontSize: 18,
-    textAlign: 'center',
-    marginVertical: 20,
-  },
-  separator: {
-    height: 2,
-    backgroundColor: Colors.white,
-  },
-});
 
 export default memo(Profile);

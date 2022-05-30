@@ -12,7 +12,6 @@ const Form: VFC<FormType> = ({ onSubmit }) => {
   const [amount, setAmount] = useState('');
 
   const onPress = useCallback(() => {
-    //TODO ADD VALIDATION
     onSubmit(amount, address);
   }, [amount, address]);
 

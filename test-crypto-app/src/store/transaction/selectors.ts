@@ -5,11 +5,12 @@ import { accountAtom } from '../account/atom';
 import { transactionAtom } from './atom';
 import web3Instance from '../../api/web3Instance';
 
-export const transactionSelector = selectorFamily({
+export const transactionSelector = selector({
   key: 'getTransaction',
-  get: (_address: string) => async () => {
-    const { result } = await getTransaction(_address);
-    const balance = await getBalance(_address);
+  get: async ({ get }) => {
+    const { address } = get(accountAtom);
+    const { result } = await getTransaction(address);
+    const balance = await getBalance(address);
     return { transaction: result, balance };
   },
 });

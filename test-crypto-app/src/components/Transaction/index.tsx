@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
 //components
-import { TransactionModel } from './TransactionModel';
+import { TransactionModel } from '../../api/transaction';
+import { Wrapper, Transaction_Block, Text } from './style';
 //utils
 import { Colors } from '../../utils/colors';
 import moment from 'moment';
@@ -14,51 +14,25 @@ const Transaction = ({ transaction }: TransactionType) => {
   const date = new Date(Number(transaction?.timeStamp) * 1000);
 
   return (
-    <View style={styles.main}>
-      <View style={styles.transactionBlock}>
-        <Text style={styles.text}>date: </Text>
-        <Text style={styles.text} numberOfLines={1}>
-          {moment(date).format('DD.MM.YYYY')}
-        </Text>
-      </View>
-      <View style={styles.transactionBlock}>
-        <Text style={styles.text}>from: </Text>
-        <Text style={styles.text} numberOfLines={1}>
-          {transaction?.from}
-        </Text>
-      </View>
-      <View style={styles.transactionBlock}>
-        <Text style={styles.text}>to: </Text>
-        <Text style={styles.text} numberOfLines={1}>
-          {transaction?.to}
-        </Text>
-      </View>
-      <View style={styles.transactionBlock}>
-        <Text style={styles.text}>value: </Text>
-        <Text style={styles.text} numberOfLines={1}>
-          {transaction?.value}
-        </Text>
-      </View>
-    </View>
+    <Wrapper>
+      <Transaction_Block>
+        <Text>date: </Text>
+        <Text numberOfLines={1}>{moment(date).format('DD.MM.YYYY')}</Text>
+      </Transaction_Block>
+      <Transaction_Block>
+        <Text>from: </Text>
+        <Text numberOfLines={1}>{transaction?.from}</Text>
+      </Transaction_Block>
+      <Transaction_Block>
+        <Text>to: </Text>
+        <Text numberOfLines={1}>{transaction?.to}</Text>
+      </Transaction_Block>
+      <Transaction_Block>
+        <Text>value: </Text>
+        <Text numberOfLines={1}>{transaction?.value}</Text>
+      </Transaction_Block>
+    </Wrapper>
   );
 };
-
-const styles = StyleSheet.create({
-  main: {
-    alignItems: 'center',
-    padding: 18,
-    backgroundColor: 'lightgray',
-  },
-  text: {
-    color: Colors.black,
-    fontSize: 12,
-  },
-  transactionBlock: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    paddingVertical: 5,
-    justifyContent: 'space-between',
-  },
-});
 
 export default memo(Transaction);
