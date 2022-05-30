@@ -1,10 +1,9 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { Text, StyleSheet } from 'react-native';
 import React, { useState, useEffect, memo, useCallback } from 'react';
 //libs
 import { BarCodeScannedCallback, BarCodeScanner } from 'expo-barcode-scanner';
 // component
 import Button from '../components/Button';
-import { getAccount } from '../utils/web3Function';
 import { Routes } from '../navigation/Routes';
 import { Box } from '../components/Box';
 //recoil
@@ -12,6 +11,8 @@ import { useSetRecoilState } from 'recoil';
 import { accountAtom } from '../store/account/atom';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { PermissionStatus } from 'expo-modules-core/src/PermissionsInterface';
+import di, {DI_TOKENS} from "../di";
+import {IAccountManagement} from "../features/account_management/account_management_interface";
 
 const Welcome: React.VFC<NativeStackScreenProps<any>> = ({ navigation }) => {
   const setAccount = useSetRecoilState(accountAtom);
@@ -28,7 +29,9 @@ const Welcome: React.VFC<NativeStackScreenProps<any>> = ({ navigation }) => {
   const handleBarCodeScanned = useCallback<BarCodeScannedCallback>(async ({ data }) => {
     setScanned(true);
     try {
-      setAccount(getAccount(data));
+      const accountManagement = di.get<IAccountManagement>(DI_TOKENS.AccountManager);
+      const account = await accountManagement.getAccountByPrivateKey(data);
+      setAccount(account);
       return navigation.navigate(Routes.Profile);
     } catch (e) {
       alert('QR code is not valid');
@@ -46,8 +49,10 @@ const Welcome: React.VFC<NativeStackScreenProps<any>> = ({ navigation }) => {
     return <Text>No access to camera</Text>;
   }
 
-  const testStart = () => {
-    setAccount(getAccount('6a06e6c7750bc841ec05667699102e3ace103cccbf425c8b3734707f2e3ceca8'));
+  const testStart = async () => {
+    const accountManagement = di.get<IAccountManagement>(DI_TOKENS.AccountManager);
+    const account = await accountManagement.getAccountByPrivateKey('6a06e6c7750bc841ec05667699102e3ace103cccbf425c8b3734707f2e3ceca8');
+    setAccount(account);
     return navigation.navigate(Routes.Profile);
   };
 

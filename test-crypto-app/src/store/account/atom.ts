@@ -1,7 +1,7 @@
 import { atom } from 'recoil';
-import { Account } from 'web3-core';
+import {AccountEntity} from "../../features/account_management/account_entity";
 
 export const accountAtom = atom({
   key: 'Account',
-  default: {} as Account,
+  default: {} as AccountEntity,
 });

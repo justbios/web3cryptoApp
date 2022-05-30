@@ -14,18 +14,18 @@ import Form from '../components/Form';
 import Transaction from '../components/Transaction';
 import { Box } from '../components/Box';
 //api
-import { TransactionModel } from '../api/transaction';
-import web3Instance from '../api/web3Instance';
 // utils
 import { Colors } from '../utils/colors';
 //recoil
 import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { accountAtom } from '../store/account/atom';
-import { transactionSelector } from '../store/transaction/selectors';
 import { transactionAtom } from '../store/transaction/atom';
+import {transactionsSelector} from "../store/transaction/selectors";
+import {getBalanceSelector} from "../store/account/selectors";
+import {TransactionEntity} from "../features/transactions_management/transaction_entity";
 
 const Profile: React.VFC = () => {
-  const { transaction, balance } = useRecoilValue(transactionSelector);
+  const transactions = useRecoilValue(transactionsSelector);
+  const balance = useRecoilValue(getBalanceSelector);
   const setForm = useSetRecoilState(transactionAtom);
 
   const onPress = useCallback(
@@ -45,16 +45,16 @@ const Profile: React.VFC = () => {
 
   // end  style
 
-  const renderItem = useCallback<ListRenderItem<TransactionModel>>(
+  const renderItem = useCallback<ListRenderItem<TransactionEntity>>(
     ({ item }) => (
       <Transaction
-        transaction={{ ...item, value: web3Instance.utils.fromWei(item.value, 'ether') }}
+        transaction={item}
       />
     ),
     []
   );
 
-  const keyExtractor = useCallback((item: TransactionModel) => item.hash, []);
+  const keyExtractor = useCallback((item: TransactionEntity) => item.hash, []);
 
   const separator = () => <Box height={2} backgroundColor={Colors.white} />;
 
@@ -72,9 +72,9 @@ const Profile: React.VFC = () => {
         <Box alignItems={'center'} marginBottom={20}>
           <Text>Transaction</Text>
         </Box>
-        {transaction.length ? (
+        {transactions.length ? (
           <FlatList
-            data={transaction}
+            data={transactions}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
             ItemSeparatorComponent={separator}

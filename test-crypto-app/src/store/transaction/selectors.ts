@@ -1,17 +1,24 @@
-import { selectorFamily, selector } from 'recoil';
-import { TransactionModel, getTransaction } from '../../api/transaction';
-import { getBalance } from '../../utils/web3Function';
+import { selector } from 'recoil';
 import { accountAtom } from '../account/atom';
 import { transactionAtom } from './atom';
-import web3Instance from '../../api/web3Instance';
+import di, {DI_TOKENS} from "../../di";
+import {
+  ISendTransactionManagement
+} from "../../features/send_transactions_management/send_transactions_management_interface";
+import {ITransactionsManagement} from "../../features/transactions_management/transactions_management_interface";
 
-export const transactionSelector = selector({
+export const transactionsSelector = selector({
   key: 'getTransaction',
   get: async ({ get }) => {
     const { address } = get(accountAtom);
-    const { result } = await getTransaction(address);
-    const balance = await getBalance(address);
-    return { transaction: result, balance };
+
+    const transactionsManager = di.get<ITransactionsManagement>(DI_TOKENS.TransactionsManager);
+
+    return transactionsManager.getTransaction({
+      address,
+      limit: 10,
+      offset: 1
+    })
   },
 });
 
@@ -19,29 +26,19 @@ export const sendTransactionSelector = selector({
   key: 'sendTransaction',
   get: async ({ get }) => {
     const { address, amount } = get(transactionAtom);
-    const _account = get(accountAtom);
+    const account = get(accountAtom);
+
+    const sendTransactionManager = di.get<ISendTransactionManagement>(DI_TOKENS.CurrencyManagerFacade);
+
     try {
-      const value = web3Instance.utils.toWei(amount, 'ether');
-      const fixedTransaction = {
+      return await sendTransactionManager.sendTransaction({
+        value: amount,
+        from: account.address,
         to: address,
-        value,
-        from: _account.address,
-      };
-      const gas = await web3Instance.eth.estimateGas(fixedTransaction);
-      const transaction = {
-        ...fixedTransaction,
-        gas,
-      };
-      const signedTx = await _account.signTransaction(transaction);
-      const { status } = await web3Instance.eth.sendSignedTransaction(signedTx.rawTransaction!);
-      if (status) {
-        await getTransaction(address);
-      } else {
-        throw new Error('The problem was occurred');
-      }
+        privateKey: account.privateKey
+      })
     } catch (e) {
-      alert('something went wrong');
-      console.log(e, 'ERROR');
+      return false;
     }
   },
 });
