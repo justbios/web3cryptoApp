@@ -6,9 +6,12 @@ export const Wrapper = styled.View({
   alignItems: 'center',
   padding: 18,
   backgroundColor: Colors.lightblue,
+  height: 150,
+  width: '100%',
+  borderRadius: 10
 });
 
-export const Transaction_Block = styled.View({
+export const TransactionBlock = styled.View({
   alignItems: 'center',
   flexDirection: 'row',
   paddingVertical: 5,

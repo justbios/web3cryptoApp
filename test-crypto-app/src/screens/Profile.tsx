@@ -2,31 +2,30 @@ import {
   View,
   Text,
   SafeAreaView,
-  FlatList,
   ListRenderItem,
-  ActivityIndicator,
 } from 'react-native';
-import React, { memo, useCallback } from 'react';
+import React, { memo, useCallback, useState } from 'react';
 // libs
 import styled from 'styled-components/native';
+import Animated from 'react-native-reanimated';
 //components
 import Form from '../components/Form';
 import Transaction from '../components/Transaction';
 import { Box } from '../components/Box';
-//api
-// utils
-import { Colors } from '../utils/colors';
 //recoil
 import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { transactionAtom } from '../store/transaction/atom';
-import {transactionsSelector} from "../store/transaction/selectors";
-import {getBalanceSelector} from "../store/account/selectors";
-import {TransactionEntity} from "../features/transactions_management/transaction_entity";
+import { transactionsSelector } from '../store/transaction/selectors';
+import { getBalanceSelector } from '../store/account/selectors';
+import { TransactionEntity } from '../features/transactions_management/transaction_entity';
+import { CARD_LENGTH, SPACING} from '../utils/Constants';
 
 const Profile: React.VFC = () => {
   const transactions = useRecoilValue(transactionsSelector);
   const balance = useRecoilValue(getBalanceSelector);
   const setForm = useSetRecoilState(transactionAtom);
+  
+  const [scrollx, setScrollx] = useState<number>(0)
 
   const onPress = useCallback(
     async (amount: string, address: string) => {
@@ -45,18 +44,15 @@ const Profile: React.VFC = () => {
 
   // end  style
 
-  const renderItem = useCallback<ListRenderItem<TransactionEntity>>(
-    ({ item }) => (
-      <Transaction
-        transaction={item}
-      />
-    ),
-    []
-  );
-
   const keyExtractor = useCallback((item: TransactionEntity) => item.hash, []);
 
-  const separator = () => <Box height={2} backgroundColor={Colors.white} />;
+   const renderItem = useCallback<ListRenderItem<TransactionEntity>>(
+    ({ item, index }) => {
+      return(
+        <Transaction transaction={item} scrollx={scrollx} index={index} />
+    )},
+    [scrollx]
+  );
 
   return (
     <Box flex={1}>
@@ -72,19 +68,27 @@ const Profile: React.VFC = () => {
         <Box alignItems={'center'} marginBottom={20}>
           <Text>Transaction</Text>
         </Box>
-        {transactions.length ? (
-          <FlatList
-            data={transactions}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-            ItemSeparatorComponent={separator}
-          />
-        ) : (
-          <ActivityIndicator />
-        )}
+
+        <Animated.FlatList
+        onScroll={(event) => {
+          setScrollx(event.nativeEvent.contentOffset.x)
+        }}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{paddingTop: SPACING}}
+        horizontal={true}
+        snapToAlignment="center"
+        snapToInterval={CARD_LENGTH}
+        scrollEventThrottle={16}
+        data={transactions}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
+        bounces={false}
+      />
       </Box>
     </Box>
   );
 };
 
 export default memo(Profile);
+
+
