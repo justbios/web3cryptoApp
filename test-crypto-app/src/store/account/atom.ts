@@ -1,14 +1,7 @@
 import { atom } from 'recoil';
+import {AccountEntity} from "../../features/account_management/account_entity";
 
-export interface Account {
-  address: string;
-  encrypt: () => void;
-  privateKey: string;
-  sign: () => void;
-  signTransaction: () => void;
-}
-
-export const account = atom({
+export const accountAtom = atom({
   key: 'Account',
-  default: {} as Account,
+  default: {} as AccountEntity,
 });

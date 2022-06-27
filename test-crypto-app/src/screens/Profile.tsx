@@ -1,118 +1,148 @@
-import {
-  View,
-  Text,
-  SafeAreaView,
-  StyleSheet,
-  FlatList,
-  ListRenderItem,
-  ActivityIndicator,
-} from 'react-native';
-import React, { memo, useCallback, useEffect, useState } from 'react';
-//libs
-import Web3 from 'web3';
+import { StyleSheet, Text, SafeAreaView, ListRenderItem, View } from 'react-native';
+import React, { memo, useCallback, useState, useEffect } from 'react';
+// libs
+import styled from 'styled-components/native';
+import Animated from 'react-native-reanimated';
+import { BarCodeScannedCallback, BarCodeScanner } from 'expo-barcode-scanner';
 //components
-import Form from '../components/Form';
 import Transaction from '../components/Transaction';
-import { TransactionModel } from '../components/Transaction/TransactionModel';
-//api
-import { getTransaction } from '../api/transaction';
-//utils
-import { getAccount, getBalance } from '../utils/web3Function';
+import { Box } from '../components/Box';
 //recoil
-import { useRecoilValue } from 'recoil';
-import { account } from '../store/account/atom';
-import { Colors } from '../utils/colors';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
+import { transactionAtom } from '../store/transaction/atom';
+import { transactionsSelector } from '../store/transaction/selectors';
+import { getBalanceSelector } from '../store/account/selectors';
+import { TransactionEntity } from '../features/transactions_management/transaction_entity';
+import { CARD_LENGTH, SPACING } from '../utils/Constants';
+import Button from '../components/Button';
+import Input from '../components/Input';
+import Balance from '../components/Balance';
 
-function Profile() {
-  const web3 = new Web3(
-    new Web3.providers.HttpProvider('https://ropsten.infura.io/v3/372f31c1ef064786a4192d428733538c')
-  );
-  const _account = getAccount(account);
+const Profile: React.VFC = () => {
+  const transactions = useRecoilValue(transactionsSelector);
+  const balance = useRecoilValue(getBalanceSelector);
+  const setForm = useSetRecoilState(transactionAtom);
+  const [openCamera, setOpenCamera] = useState<boolean>(false);
+  const [scrollx, setScrollx] = useState<number>(0);
+  const [isFlipped, setIsFlipped] = useState<boolean>(false);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [scanned, setScanned] = useState<boolean>(false);
+  const [address, setAddress] = useState('');
+  const [amount, setAmount] = useState('');
 
-  const [balance, setBalance] = useState<string>('');
-  const [transaction, setTransaction] = useState([]);
+  const onPress = useCallback(async () => {
+    setForm({ amount, address });
+  }, [setForm]);
 
   useEffect(() => {
-    getBalance(_account.address)
-      .then((balance) => setBalance(balance))
-      .catch((e) => console.log(e));
-  }, [_account.address]);
-
-  useEffect(() => {
-    getTransaction(_account.address).then((body) => {
-      const tenTransaction = body.result.slice(body.result.length - 10);
-      setTransaction(tenTransaction);
-    });
+    (async () => {
+      const { status } = await BarCodeScanner.requestPermissionsAsync();
+      setHasPermission(status === 'granted');
+    })();
   }, []);
 
-  const onPress = useCallback(async (amount, address) => {
+  const handleBarCodeScanned = useCallback<BarCodeScannedCallback>(async ({ data }) => {
+    setScanned(true);
     try {
-      const value = web3.utils.toWei(amount, 'ether');
-      // const gasPrice = await web3.eth.getGasPrice();
-      const gas = await web3.eth.estimateGas({
-        to: address,
-        value,
-        from: _account.address,
-      });
-      const transaction = {
-        to: address,
-        from: _account.address,
-        value,
-        gas,
-      };
-      const signedTx = await _account.signTransaction(transaction);
-      const res = await web3.eth.sendSignedTransaction(signedTx.rawTransaction!);
+      setAddress(data);
+      setOpenCamera(false);
     } catch (e) {
-      console.log(e, 'ERROR');
+      alert('QR code is not valid');
     }
   }, []);
 
-  const renderItem = useCallback(({ item, index }) => {
-    return (
-      <View key={index + ' '}>
-        <Transaction transaction={{ ...item, value: web3.utils.fromWei(item.value, 'ether') }} />
-      </View>
-    );
+  const handleScanAgainPress = useCallback(() => {
+    setScanned(false);
   }, []);
 
-  const separator = () => <View style={styles.separator} />;
+  // start  style
 
-  return (
-    <View style={{ flex: 1 }}>
-      <SafeAreaView />
-      <View style={{ marginHorizontal: '10%' }}>
-        <Text style={styles.title}>Баланс</Text>
-        <Text>{balance || 0} ETH</Text>
-        <View>
-          <Form onSubmit={onPress} />
-        </View>
-      </View>
-      <View style={{ flex: 1 }}>
-        <Text style={{ textAlign: 'center', marginBottom: 20 }}>Transaction</Text>
-        {transaction.length ? (
-          <FlatList
-            data={transaction}
-            renderItem={renderItem as ListRenderItem<TransactionModel>}
-            ItemSeparatorComponent={separator}
-          />
-        ) : (
-          <ActivityIndicator />
-        )}
-      </View>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  title: {
+  const Title = styled.Text({
     fontSize: 18,
     textAlign: 'center',
     marginVertical: 20,
-  },
-  separator: {
-    height: 2,
-    backgroundColor: Colors.white,
-  },
-});
+  });
+
+  // end  style
+
+  const flipCard = () => {
+    setIsFlipped(!isFlipped);
+  };
+
+  const keyExtractor = useCallback((item: TransactionEntity) => item.hash, []);
+
+  const renderItem = useCallback<ListRenderItem<TransactionEntity>>(
+    ({ item, index }) => {
+      return (
+        <Transaction
+          transaction={item}
+          scrollx={scrollx}
+          index={index}
+          isFlipped={isFlipped}
+          onPress={flipCard}
+        />
+      );
+    },
+    [scrollx, isFlipped]
+  );
+
+  return (
+    <>
+      <Box flex={1} bg={'#fff1'}>
+        <SafeAreaView />
+
+        <Box marginX={'10%'}>
+          <Balance title="Баланс" balance={balance} currency={'ETH'} onPress={console.log} />
+          <Input
+            title="address"
+            onChange={setAddress}
+            scan={() => setOpenCamera(true)}
+            value={address}
+          />
+          <Input title="amount" onChange={setAmount} />
+          <View style={{ alignItems: 'center' }}>
+            <Button text="submit" onPress={onPress} />
+          </View>
+        </Box>
+        <Box>
+          <Box alignItems={'center'} marginBottom={20}>
+            <Text>Transaction</Text>
+          </Box>
+          <Animated.FlatList
+            onScroll={(event) => {
+              setScrollx(event.nativeEvent.contentOffset.x);
+            }}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingTop: SPACING }}
+            horizontal={true}
+            snapToAlignment="center"
+            snapToInterval={CARD_LENGTH}
+            scrollEventThrottle={16}
+            data={transactions}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            bounces={false}
+          />
+        </Box>
+      </Box>
+
+      {openCamera && (
+        <>
+          <BarCodeScanner
+            onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+            style={StyleSheet.absoluteFillObject}
+          />
+          <Box flex={1} alignItems="center" justifyContent="flex-end" marginBottom={30}>
+            {scanned && (
+              <Box flex={1} alignItems="center" justifyContent="flex-end" mb={30}>
+                <Button text="Tap to Scan Again" onPress={handleScanAgainPress} />
+              </Box>
+            )}
+          </Box>
+        </>
+      )}
+    </>
+  );
+};
 
 export default memo(Profile);

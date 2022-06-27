@@ -1,64 +1,89 @@
 import React, { memo } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
 //components
-import { TransactionModel } from './TransactionModel';
+import { TransactionBlock, Text, Wrapper } from './style';
 //utils
-import { Colors } from '../../utils/colors';
 import moment from 'moment';
+import { TransactionEntity } from '../../features/transactions_management/transaction_entity';
+import Animated, {
+  interpolate,
+  Extrapolate,
+  useAnimatedStyle,
+  withSpring,
+  useSharedValue,
+} from 'react-native-reanimated';
+import { CARD_LENGTH, SPACING } from '../../utils/Constants';
+import { Box } from '../Box';
+import { shadow } from '../../utils/colors';
 
 interface TransactionType {
-  transaction: TransactionModel;
+  transaction: TransactionEntity;
+  index: number;
+  scrollx: number;
+  isFlipped: boolean;
+  onPress: () => void;
 }
 
-const Transaction = ({ transaction }: TransactionType) => {
-  const date = new Date(Number(transaction?.timeStamp) * 1000);
+const Transaction = ({ isFlipped, transaction, index, scrollx, onPress }: TransactionType) => {
+  const size = useSharedValue(0.8);
+  const flip = useSharedValue(0);
+
+  const inputValues = [(index - 1) * CARD_LENGTH, index * CARD_LENGTH, (index + 1) * CARD_LENGTH];
+
+  const animatedStyles = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          scale: withSpring(size.value),
+        },
+      ],
+    };
+  });
+
+  const animatedFlipStyles = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          rotateY: withSpring(`${flip.value}deg`),
+        },
+      ],
+    };
+  });
+  flip.value = interpolate(isFlipped ? 180 : 0, [0, 180], [0, 180], Extrapolate.CLAMP);
+
+  size.value = interpolate(scrollx, inputValues, [0.9, 1.1, 0.9], Extrapolate.CLAMP);
 
   return (
-    <View style={styles.main}>
-      <View style={styles.transactionBlock}>
-        <Text style={styles.text}>date: </Text>
-        <Text style={styles.text} numberOfLines={1}>
-          {moment(date).format('DD.MM.YYYY')}
-        </Text>
-      </View>
-      <View style={styles.transactionBlock}>
-        <Text style={styles.text}>from: </Text>
-        <Text style={styles.text} numberOfLines={1}>
-          {transaction?.from}
-        </Text>
-      </View>
-      <View style={styles.transactionBlock}>
-        <Text style={styles.text}>to: </Text>
-        <Text style={styles.text} numberOfLines={1}>
-          {transaction?.to}
-        </Text>
-      </View>
-      <View style={styles.transactionBlock}>
-        <Text style={styles.text}>value: </Text>
-        <Text style={styles.text} numberOfLines={1}>
-          {transaction?.value}
-        </Text>
-      </View>
-    </View>
+    <Animated.View
+      style={[
+        {
+          width: CARD_LENGTH,
+          padding: SPACING,
+        },
+        animatedStyles,
+      ]}
+    >
+      <Animated.View style={animatedFlipStyles}>
+        <Box as={Wrapper} onPress={onPress} style={{ ...shadow.light }}>
+          <TransactionBlock>
+            <Text>date: </Text>
+            <Text numberOfLines={1}>{moment(transaction.date).format('DD.MM.YYYY')}</Text>
+          </TransactionBlock>
+          <TransactionBlock>
+            <Text>from: </Text>
+            <Text numberOfLines={1}>{transaction?.from}</Text>
+          </TransactionBlock>
+          <TransactionBlock>
+            <Text>to: </Text>
+            <Text numberOfLines={1}>{transaction?.to}</Text>
+          </TransactionBlock>
+          <TransactionBlock>
+            <Text>value: </Text>
+            <Text numberOfLines={1}>{transaction?.value}</Text>
+          </TransactionBlock>
+        </Box>
+      </Animated.View>
+    </Animated.View>
   );
 };
-
-const styles = StyleSheet.create({
-  main: {
-    alignItems: 'center',
-    padding: 18,
-    backgroundColor: 'lightgray',
-  },
-  text: {
-    color: Colors.black,
-    fontSize: 12,
-  },
-  transactionBlock: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    paddingVertical: 5,
-    justifyContent: 'space-between',
-  },
-});
 
 export default memo(Transaction);

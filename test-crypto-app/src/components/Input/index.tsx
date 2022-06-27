@@ -1,21 +1,16 @@
-import {
-  View,
-  StyleSheet,
-  TextInput,
-  Text,
-  NativeSyntheticEvent,
-  TextInputChangeEventData,
-} from 'react-native';
+import { NativeSyntheticEvent, TextInputChangeEventData, Image, Pressable } from 'react-native';
 import React, { memo } from 'react';
-import { Colors } from '../../utils/colors';
+import { Wrapper, TitleText, ErrorText, InputComponent } from './style';
 
-interface InputType {
+interface IInputProps {
   title?: string;
   onChange: (value: string) => void;
-  error?: boolean;
+  scan?: () => void;
+  error?: string;
+  value?: string;
 }
 
-function Input({ onChange, title, error }: InputType) {
+const Input: React.VFC<IInputProps> = ({ value, scan, onChange, title, error }) => {
   const onChangeText = (text: NativeSyntheticEvent<TextInputChangeEventData>) => {
     if (!text.nativeEvent.text) {
       return;
@@ -24,33 +19,24 @@ function Input({ onChange, title, error }: InputType) {
   };
 
   return (
-    <View>
-      {title && <Text style={styles.title}>{title}</Text>}
-      <View style={[styles.container, { borderColor: error ? Colors.red : Colors.black }]}>
-        <TextInput style={styles.input} onChange={onChangeText} />
-      </View>
-      {error && <Text style={styles.errorText}>data is`t valid</Text>}
-    </View>
+    <>
+      {title && <TitleText>{title}</TitleText>}
+      <Wrapper>
+        <InputComponent value={value} onChange={onChangeText} />
+        {scan && (
+          <Pressable style={{ width: 40, height: 30, paddingRight: 8 }} onPress={scan}>
+            <Image
+              style={{ flex: 1 }}
+              source={{
+                uri: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRf9-YaWIWH80kKK8WzNukppUJF604LHnFU-Q&usqp=CAU',
+              }}
+            />
+          </Pressable>
+        )}
+      </Wrapper>
+      {error && <ErrorText>{error}</ErrorText>}
+    </>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  title: {
-    marginVertical: 5,
-  },
-  input: {
-    padding: 8,
-  },
-  errorText: {
-    marginVertical: 5,
-    fontSize: 12,
-    color: Colors.red,
-    textAlign: 'center',
-  },
-});
+};
 
 export default memo(Input);
