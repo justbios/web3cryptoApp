@@ -2,13 +2,13 @@ import styled from 'styled-components/native';
 // utils
 import { Colors } from '../../utils/colors';
 
-export const Wrapper = styled.View({
+export const Wrapper = styled.Pressable({
   alignItems: 'center',
   padding: 18,
-  backgroundColor: Colors.lightblue,
+  backgroundColor: 'rgb(255, 255, 255)',
   height: 150,
   width: '100%',
-  borderRadius: 10
+  borderRadius: 10,
 });
 
 export const TransactionBlock = styled.View({

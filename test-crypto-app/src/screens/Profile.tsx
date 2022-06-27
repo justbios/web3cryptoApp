@@ -1,15 +1,10 @@
-import {
-  View,
-  Text,
-  SafeAreaView,
-  ListRenderItem,
-} from 'react-native';
-import React, { memo, useCallback, useState } from 'react';
+import { StyleSheet, Text, SafeAreaView, ListRenderItem, View } from 'react-native';
+import React, { memo, useCallback, useState, useEffect } from 'react';
 // libs
 import styled from 'styled-components/native';
 import Animated from 'react-native-reanimated';
+import { BarCodeScannedCallback, BarCodeScanner } from 'expo-barcode-scanner';
 //components
-import Form from '../components/Form';
 import Transaction from '../components/Transaction';
 import { Box } from '../components/Box';
 //recoil
@@ -18,21 +13,47 @@ import { transactionAtom } from '../store/transaction/atom';
 import { transactionsSelector } from '../store/transaction/selectors';
 import { getBalanceSelector } from '../store/account/selectors';
 import { TransactionEntity } from '../features/transactions_management/transaction_entity';
-import { CARD_LENGTH, SPACING} from '../utils/Constants';
+import { CARD_LENGTH, SPACING } from '../utils/Constants';
+import Button from '../components/Button';
+import Input from '../components/Input';
+import Balance from '../components/Balance';
 
 const Profile: React.VFC = () => {
   const transactions = useRecoilValue(transactionsSelector);
   const balance = useRecoilValue(getBalanceSelector);
   const setForm = useSetRecoilState(transactionAtom);
-  
-  const [scrollx, setScrollx] = useState<number>(0)
+  const [openCamera, setOpenCamera] = useState<boolean>(false);
+  const [scrollx, setScrollx] = useState<number>(0);
+  const [isFlipped, setIsFlipped] = useState<boolean>(false);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
+  const [scanned, setScanned] = useState<boolean>(false);
+  const [address, setAddress] = useState('');
+  const [amount, setAmount] = useState('');
 
-  const onPress = useCallback(
-    async (amount: string, address: string) => {
-      setForm({ amount, address });
-    },
-    [setForm]
-  );
+  const onPress = useCallback(async () => {
+    setForm({ amount, address });
+  }, [setForm]);
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await BarCodeScanner.requestPermissionsAsync();
+      setHasPermission(status === 'granted');
+    })();
+  }, []);
+
+  const handleBarCodeScanned = useCallback<BarCodeScannedCallback>(async ({ data }) => {
+    setScanned(true);
+    try {
+      setAddress(data);
+      setOpenCamera(false);
+    } catch (e) {
+      alert('QR code is not valid');
+    }
+  }, []);
+
+  const handleScanAgainPress = useCallback(() => {
+    setScanned(false);
+  }, []);
 
   // start  style
 
@@ -44,51 +65,84 @@ const Profile: React.VFC = () => {
 
   // end  style
 
+  const flipCard = () => {
+    setIsFlipped(!isFlipped);
+  };
+
   const keyExtractor = useCallback((item: TransactionEntity) => item.hash, []);
 
-   const renderItem = useCallback<ListRenderItem<TransactionEntity>>(
+  const renderItem = useCallback<ListRenderItem<TransactionEntity>>(
     ({ item, index }) => {
-      return(
-        <Transaction transaction={item} scrollx={scrollx} index={index} />
-    )},
-    [scrollx]
+      return (
+        <Transaction
+          transaction={item}
+          scrollx={scrollx}
+          index={index}
+          isFlipped={isFlipped}
+          onPress={flipCard}
+        />
+      );
+    },
+    [scrollx, isFlipped]
   );
 
   return (
-    <Box flex={1}>
-      <SafeAreaView />
-      <Box marginX={'10%'}>
-        <Title>Баланс</Title>
-        <Text>{balance || 0} ETH</Text>
-        <View>
-          <Form onSubmit={onPress} />
-        </View>
-      </Box>
-      <Box flex={1}>
-        <Box alignItems={'center'} marginBottom={20}>
-          <Text>Transaction</Text>
-        </Box>
+    <>
+      <Box flex={1} bg={'#fff1'}>
+        <SafeAreaView />
 
-        <Animated.FlatList
-        onScroll={(event) => {
-          setScrollx(event.nativeEvent.contentOffset.x)
-        }}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{paddingTop: SPACING}}
-        horizontal={true}
-        snapToAlignment="center"
-        snapToInterval={CARD_LENGTH}
-        scrollEventThrottle={16}
-        data={transactions}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        bounces={false}
-      />
+        <Box marginX={'10%'}>
+          <Balance title="Баланс" balance={balance} currency={'ETH'} onPress={console.log} />
+          <Input
+            title="address"
+            onChange={setAddress}
+            scan={() => setOpenCamera(true)}
+            value={address}
+          />
+          <Input title="amount" onChange={setAmount} />
+          <View style={{ alignItems: 'center' }}>
+            <Button text="submit" onPress={onPress} />
+          </View>
+        </Box>
+        <Box>
+          <Box alignItems={'center'} marginBottom={20}>
+            <Text>Transaction</Text>
+          </Box>
+          <Animated.FlatList
+            onScroll={(event) => {
+              setScrollx(event.nativeEvent.contentOffset.x);
+            }}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingTop: SPACING }}
+            horizontal={true}
+            snapToAlignment="center"
+            snapToInterval={CARD_LENGTH}
+            scrollEventThrottle={16}
+            data={transactions}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            bounces={false}
+          />
+        </Box>
       </Box>
-    </Box>
+
+      {openCamera && (
+        <>
+          <BarCodeScanner
+            onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+            style={StyleSheet.absoluteFillObject}
+          />
+          <Box flex={1} alignItems="center" justifyContent="flex-end" marginBottom={30}>
+            {scanned && (
+              <Box flex={1} alignItems="center" justifyContent="flex-end" mb={30}>
+                <Button text="Tap to Scan Again" onPress={handleScanAgainPress} />
+              </Box>
+            )}
+          </Box>
+        </>
+      )}
+    </>
   );
 };
 
 export default memo(Profile);
-
-

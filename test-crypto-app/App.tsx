@@ -4,8 +4,11 @@ import React, {Suspense, useEffect, useState} from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import AppNavigation from './src/navigation/AppNavigation';
 import { RecoilRoot } from 'recoil';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, Platform, View } from 'react-native';
 import {initDI} from "./src/di";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { withWalletConnect } from "@walletconnect/react-native-dapp";
+const {  scheme } = require("expo");
 
 const App: React.VFC = () => {
     const [appSetUp, setAppSetUp] = useState<boolean>(false);
@@ -38,4 +41,10 @@ const App: React.VFC = () => {
     );
 }
 
-export default App;
+export default withWalletConnect(App, {
+    redirectUrl:
+      Platform.OS === "web" ? window.location.origin : `${scheme}://`,
+    storageOptions: {
+      asyncStorage: AsyncStorage as any,
+    },
+  });

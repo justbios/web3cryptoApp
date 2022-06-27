@@ -1,5 +1,4 @@
 export enum Routes {
-  Welcome = 'Welcome',
   Profile = 'Profile',
-  ScanQR='ScanQR'
+  ScanQR = 'ScanQR',
 }
