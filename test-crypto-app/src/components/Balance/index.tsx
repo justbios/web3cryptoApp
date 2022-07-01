@@ -10,10 +10,9 @@ interface IBalanceProps {
   balance: string;
   title: string;
   currency: string;
-  onPress: () => void;
 }
 
-const Balance: VFC<IBalanceProps> = ({ balance, currency, onPress, title }) => {
+const Balance: VFC<IBalanceProps> = ({ balance, currency, title }) => {
   return (
     <View style={styles.main}>
       <View style={styles.balance}>
