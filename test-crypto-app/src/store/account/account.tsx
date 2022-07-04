@@ -11,12 +11,16 @@ class Account {
     makeAutoObservable(this);
   }
 
-  async getAccount(data: string) {
-    const accountManagement = di.get<IAccountManagement>(DI_TOKENS.AccountManager);
+  *getAccount(data: string) {
+    try {
+      const accountManagement = di.get<IAccountManagement>(DI_TOKENS.AccountManager);
 
-    this.account = await accountManagement.getAccountByPrivateKey(data);
-    if (this.account.address) {
-      this.balance = await accountManagement.getAccountBalance(this.account.address);
+      this.account = yield accountManagement.getAccountByPrivateKey(data);
+      if (this.account?.address) {
+        this.balance = yield accountManagement.getAccountBalance(this.account.address);
+      }
+    } catch (e) {
+      console.log('Error');
     }
   }
 }

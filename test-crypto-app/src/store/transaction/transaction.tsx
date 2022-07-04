@@ -11,21 +11,22 @@ class Transaction {
     makeAutoObservable(this);
   }
 
-  async getTransaction(address: string) {
+  *getTransaction(address: string) {
     const transactionsManager = di.get<ITransactionsManagement>(DI_TOKENS.TransactionsManager);
-    this.transactions = await transactionsManager.getTransaction({
+    this.transactions = yield transactionsManager.getTransaction({
       address,
       limit: 10,
       offset: 1,
     });
   }
-  async sendTransaction(account: AccountEntity, amount: string, address: string) {
+
+  *sendTransaction(account: AccountEntity, amount: string, address: string) {
     const sendTransactionManager = di.get<ISendTransactionManagement>(
       DI_TOKENS.CurrencyManagerFacade
     );
 
     try {
-      return await sendTransactionManager.sendTransaction({
+      yield sendTransactionManager.sendTransaction({
         value: amount,
         from: account.address,
         to: address,
