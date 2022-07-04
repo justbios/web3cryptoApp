@@ -6,21 +6,16 @@ import { BarCodeScannedCallback, BarCodeScanner } from 'expo-barcode-scanner';
 import Button from '../components/Button';
 import { Routes } from '../navigation/Routes';
 import { Box } from '../components/Box';
-//recoil
-import { useSetRecoilState } from 'recoil';
-import { accountAtom } from '../store/account/atom';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { PermissionStatus } from 'expo-modules-core/src/PermissionsInterface';
-import di, { DI_TOKENS } from '../di';
-import { IAccountManagement } from '../features/account_management/account_management_interface';
-import Input from '../components/Input';
+
 import WalletConnect from '@walletconnect/client';
 import { IConnector } from '@walletconnect/types';
 import { shadow } from '../utils/colors';
+import { observer } from 'mobx-react-lite';
+import account from '../store/account/account';
 
-const ScanQR: React.VFC<NativeStackScreenProps<any>> = ({ navigation }) => {
-  const setAccount = useSetRecoilState(accountAtom);
-
+const ScanQR: React.VFC<NativeStackScreenProps<any>> = observer(({ navigation }) => {
   const [connector, setConnector] = useState<IConnector>();
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState<boolean>(false);
@@ -37,12 +32,9 @@ const ScanQR: React.VFC<NativeStackScreenProps<any>> = ({ navigation }) => {
   const handleBarCodeScanned = useCallback<BarCodeScannedCallback>(async ({ data }) => {
     setScanned(true);
     try {
-      const accountManagement = di.get<IAccountManagement>(DI_TOKENS.AccountManager);
-      const account = await accountManagement.getAccountByPrivateKey(data);
-      setAccount(account);
+      account.getAccount(data);
       setOpenCamera(false);
       return navigation.navigate(Routes.Profile);
-      // handleChange(data);
     } catch (e) {
       alert('QR code is not valid');
     }
@@ -60,11 +52,8 @@ const ScanQR: React.VFC<NativeStackScreenProps<any>> = ({ navigation }) => {
   }
 
   const testStart = async () => {
-    const accountManagement = di.get<IAccountManagement>(DI_TOKENS.AccountManager);
-    const account = await accountManagement.getAccountByPrivateKey(
-      '6a06e6c7750bc841ec05667699102e3ace103cccbf425c8b3734707f2e3ceca8'
-    );
-    setAccount(account);
+    const data = '6a06e6c7750bc841ec05667699102e3ace103cccbf425c8b3734707f2e3ceca8';
+    account.getAccount(data);
     return navigation.navigate(Routes.Profile);
   };
 
@@ -162,6 +151,6 @@ const ScanQR: React.VFC<NativeStackScreenProps<any>> = ({ navigation }) => {
       </Box>
     </>
   );
-};
+});
 
 export default memo(ScanQR);

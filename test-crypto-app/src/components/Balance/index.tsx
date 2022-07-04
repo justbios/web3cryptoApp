@@ -18,7 +18,7 @@ const Balance: VFC<IBalanceProps> = ({ balance, currency, title }) => {
       <View style={styles.balance}>
         <Text style={styles.topText}>{title}</Text>
         <View style={styles.bottomText}>
-          <Text>{balance}</Text>
+          <Text>{balance || '-'}</Text>
           <Text style={{ marginLeft: 10 }}>{currency}</Text>
         </View>
       </View>

@@ -1,4 +1,11 @@
-import { StyleSheet, Text, SafeAreaView, ListRenderItem, View } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  SafeAreaView,
+  ListRenderItem,
+  View,
+  ActivityIndicator,
+} from 'react-native';
 import React, { memo, useCallback, useState, useEffect } from 'react';
 // libs
 import styled from 'styled-components/native';
@@ -7,21 +14,16 @@ import { BarCodeScannedCallback, BarCodeScanner } from 'expo-barcode-scanner';
 //components
 import Transaction from '../components/Transaction';
 import { Box } from '../components/Box';
-//recoil
-import { useRecoilValue, useSetRecoilState } from 'recoil';
-import { transactionAtom } from '../store/transaction/atom';
-import { transactionsSelector } from '../store/transaction/selectors';
-import { getBalanceSelector } from '../store/account/selectors';
 import { TransactionEntity } from '../features/transactions_management/transaction_entity';
 import { CARD_LENGTH, SPACING } from '../utils/Constants';
 import Button from '../components/Button';
 import Input from '../components/Input';
 import Balance from '../components/Balance';
+import { observer } from 'mobx-react-lite';
+import accountStore from '../store/account/account';
+import transaction from '../store/transaction/transaction';
 
-const Profile: React.VFC = () => {
-  const transactions = useRecoilValue(transactionsSelector);
-  const balance = useRecoilValue(getBalanceSelector);
-  const setForm = useSetRecoilState(transactionAtom);
+const Profile: React.VFC = observer(() => {
   const [openCamera, setOpenCamera] = useState<boolean>(false);
   const [scrollx, setScrollx] = useState<number>(0);
   const [isFlipped, setIsFlipped] = useState<boolean>(false);
@@ -31,14 +33,22 @@ const Profile: React.VFC = () => {
   const [amount, setAmount] = useState('');
 
   const onPress = useCallback(async () => {
-    setForm({ amount, address });
-  }, [setForm]);
+    if (accountStore.account) {
+      transaction.sendTransaction(accountStore.account, amount, address);
+    }
+  }, [accountStore.account]);
 
   useEffect(() => {
     (async () => {
       const { status } = await BarCodeScanner.requestPermissionsAsync();
       setHasPermission(status === 'granted');
     })();
+  }, []);
+
+  useEffect(() => {
+    if (accountStore.account?.address) {
+      transaction.getTransaction(accountStore?.account?.address);
+    }
   }, []);
 
   const handleBarCodeScanned = useCallback<BarCodeScannedCallback>(async ({ data }) => {
@@ -92,7 +102,12 @@ const Profile: React.VFC = () => {
         <SafeAreaView />
 
         <Box marginX={'10%'}>
-          <Balance title="Баланс" balance={balance} currency={'ETH'} onPress={console.log} />
+          <Balance
+            title="Баланс"
+            balance={accountStore.balance}
+            currency={'ETH'}
+            onPress={console.log}
+          />
           <Input
             title="address"
             onChange={setAddress}
@@ -118,7 +133,7 @@ const Profile: React.VFC = () => {
             snapToAlignment="center"
             snapToInterval={CARD_LENGTH}
             scrollEventThrottle={16}
-            data={transactions}
+            data={transaction.transactions}
             keyExtractor={keyExtractor}
             renderItem={renderItem}
             bounces={false}
@@ -143,6 +158,6 @@ const Profile: React.VFC = () => {
       )}
     </>
   );
-};
+});
 
 export default memo(Profile);

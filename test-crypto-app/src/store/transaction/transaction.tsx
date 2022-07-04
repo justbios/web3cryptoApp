@@ -1,31 +1,25 @@
-import { selector } from 'recoil';
-import { accountAtom } from '../account/atom';
-import { transactionAtom } from './atom';
+import { makeAutoObservable } from 'mobx';
 import di, { DI_TOKENS } from '../../di';
+import { AccountEntity } from '../../features/account_management/account_entity';
 import { ISendTransactionManagement } from '../../features/send_transactions_management/send_transactions_management_interface';
 import { ITransactionsManagement } from '../../features/transactions_management/transactions_management_interface';
+import { TransactionEntity } from '../../features/transactions_management/transaction_entity';
 
-export const transactionsSelector = selector({
-  key: 'getTransaction',
-  get: async ({ get }) => {
-    const { address } = get(accountAtom);
+class Transaction {
+  transactions: TransactionEntity[] = [];
+  constructor() {
+    makeAutoObservable(this);
+  }
 
+  async getTransaction(address: string) {
     const transactionsManager = di.get<ITransactionsManagement>(DI_TOKENS.TransactionsManager);
-
-    return transactionsManager.getTransaction({
+    this.transactions = await transactionsManager.getTransaction({
       address,
       limit: 10,
       offset: 1,
     });
-  },
-});
-
-export const sendTransactionSelector = selector({
-  key: 'sendTransaction',
-  get: async ({ get }) => {
-    const { address, amount } = get(transactionAtom);
-    const account = get(accountAtom);
-
+  }
+  async sendTransaction(account: AccountEntity, amount: string, address: string) {
     const sendTransactionManager = di.get<ISendTransactionManagement>(
       DI_TOKENS.CurrencyManagerFacade
     );
@@ -40,5 +34,7 @@ export const sendTransactionSelector = selector({
     } catch (e) {
       return false;
     }
-  },
-});
+  }
+}
+
+export default new Transaction();
