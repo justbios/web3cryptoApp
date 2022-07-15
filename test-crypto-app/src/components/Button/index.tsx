@@ -5,22 +5,27 @@ import styled from 'styled-components/native';
 //utils
 import { Colors } from '../../utils/colors';
 
+interface IWrapper {
+  width?: number | string;
+}
 interface ButtonProp {
   text: string;
   onPress: () => void;
+  width?: number | string;
 }
-const Wrapper = styled(TouchableOpacity)(() => ({
+const Wrapper = styled(TouchableOpacity)<IWrapper>(({ width }) => ({
   justifyContent: 'center',
   alignItems: 'center',
-  width: 230,
+  width: width || 230,
   borderRadius: 30,
   paddingVertical: 14,
   backgroundColor: Colors.blue,
   marginVertical: 20,
+  maxHeight: 50,
 }));
 
-const Button: React.VFC<ButtonProp> = ({ text, onPress }) => (
-  <Wrapper onPress={onPress}>
+const Button: React.VFC<ButtonProp> = ({ width, text, onPress }) => (
+  <Wrapper width={width} onPress={onPress}>
     <Text style={{ color: Colors.white }}>{text}</Text>
   </Wrapper>
 );
