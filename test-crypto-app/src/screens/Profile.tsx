@@ -102,12 +102,16 @@ const Profile: React.VFC = observer(() => {
         <SafeAreaView />
 
         <Box marginX={'10%'}>
-          <Balance
-            title="Баланс"
-            balance={accountStore.balance}
-            currency={'ETH'}
-            onPress={console.log}
-          />
+          {!accountStore.balanceLoading ? (
+            <Balance
+              title="Баланс"
+              balance={accountStore.balance}
+              currency={'ETH'}
+              onPress={console.log}
+            />
+          ) : (
+            <ActivityIndicator />
+          )}
           <Input
             title="address"
             onChange={setAddress}
