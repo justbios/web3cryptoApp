@@ -4,9 +4,5 @@ jobs:
   Explore-GitHub-Actions:
     runs-on: ubuntu-latest
     steps:
-        uses: actions/checkout@v3
-        - name: lint
-        run: yarn lint
-        - name: lint
-        run: yarn lint- name: lint
-        run: yarn lint
+      - run: "yarn test"
+
